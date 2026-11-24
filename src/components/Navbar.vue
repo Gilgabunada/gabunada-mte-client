@@ -51,6 +51,7 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/global";
+import notyf from "../utils/notify";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -61,6 +62,7 @@ const displayName = computed(() => {
 
 const handleLogout = () => {
   auth.logout();
+  notyf.success("Logged out.");
   router.push("/login");
 };
 </script>

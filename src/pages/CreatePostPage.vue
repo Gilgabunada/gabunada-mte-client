@@ -23,6 +23,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "../api";
+import notyf from "../utils/notify";
 
 const router = useRouter();
 const title = ref("");
@@ -38,9 +39,13 @@ const handleCreate = async () => {
       title: title.value,
       content: content.value,
     });
-    router.push(`/posts/${data.post._id}`);
+    notyf.success("Post published!");
+    const postId = data.post?._id || data._id;
+    router.push(postId ? `/posts/${postId}` : "/");
   } catch (err) {
-    error.value = err.response?.data?.message || "Failed to create post.";
+    const message = err.response?.data?.message || "Failed to create post.";
+    error.value = message;
+    notyf.error(message);
   } finally {
     submitting.value = false;
   }

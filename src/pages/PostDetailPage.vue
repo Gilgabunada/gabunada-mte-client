@@ -78,6 +78,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "../stores/global";
 import api from "../api";
+import notyf from "../utils/notify";
 
 const route = useRoute();
 const router = useRouter();
@@ -90,7 +91,8 @@ const commentText = ref("");
 const submittingComment = ref(false);
 
 const isOwner = computed(() => {
-  return auth.isAuthenticated && post.value?.author?._id === auth.user?.id;
+  const userId = auth.user?.id || auth.user?._id;
+  return auth.isAuthenticated && !!userId && post.value?.author?._id === userId;
 });
 
 const canDelete = computed(() => {
@@ -100,9 +102,11 @@ const canDelete = computed(() => {
 const fetchPost = async () => {
   try {
     const { data } = await api.get(`/posts/${route.params.id}`);
-    post.value = data.post;
+    post.value = data.post || data;
   } catch (err) {
-    error.value = err.response?.data?.message || "Post not found.";
+    const message = err.response?.data?.message || "Post not found.";
+    error.value = message;
+    notyf.error(message);
   } finally {
     loading.value = false;
   }
@@ -115,10 +119,11 @@ const submitComment = async () => {
     const { data } = await api.post(`/posts/${route.params.id}/comments`, {
       text: commentText.value,
     });
-    post.value.comments = data.comments;
+    post.value.comments = data.comments || data.post?.comments || [];
     commentText.value = "";
+    notyf.success("Comment added.");
   } catch (err) {
-    alert(err.response?.data?.message || "Failed to add comment.");
+    notyf.error(err.response?.data?.message || "Failed to add comment.");
   } finally {
     submittingComment.value = false;
   }
@@ -128,9 +133,10 @@ const handleDelete = async () => {
   if (!confirm("Delete this post?")) return;
   try {
     await api.delete(`/posts/${route.params.id}`);
+    notyf.success("Post deleted.");
     router.push("/");
   } catch (err) {
-    alert(err.response?.data?.message || "Failed to delete post.");
+    notyf.error(err.response?.data?.message || "Failed to delete post.");
   }
 };
 

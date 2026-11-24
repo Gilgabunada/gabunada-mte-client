@@ -61,7 +61,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import api from "../api"; // update path if your axios file is in another folder
+import api from "../api";
+import notyf from "../utils/notify";
 
 const posts = ref([]);
 const searchQuery = ref("");
@@ -93,9 +94,11 @@ const formatDate = (dateStr) => {
 onMounted(async () => {
   try {
     const { data } = await api.get("/posts");
-    posts.value = data.posts || [];
+    posts.value = Array.isArray(data) ? data : data.posts || [];
   } catch (err) {
-    error.value = err.response?.data?.message || "Failed to load posts.";
+    const message = err.response?.data?.message || "Failed to load posts.";
+    error.value = message;
+    notyf.error(message);
   } finally {
     loading.value = false;
   }

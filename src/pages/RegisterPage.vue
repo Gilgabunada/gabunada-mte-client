@@ -68,7 +68,8 @@
 <script setup>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../stores/global"; // or "../stores/auth" if named auth.js
+import { useAuthStore } from "../stores/global";
+import notyf from "../utils/notify";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -91,12 +92,12 @@ const handleRegister = async () => {
 
   if (form.password !== confirmPassword.value) {
     error.value = "Password and Confirm Password must match.";
+    notyf.error(error.value);
     return;
   }
 
   submitting.value = true;
   try {
-    // Only send the fields expected by POST /users/register
     await auth.register({
       username: form.username,
       firstName: form.firstName,
@@ -104,9 +105,12 @@ const handleRegister = async () => {
       email: form.email,
       password: form.password,
     });
+    notyf.success("Account created! Please sign in.");
     router.push("/login");
   } catch (err) {
-    error.value = err.response?.data?.message || "Registration failed.";
+    const message = err.response?.data?.message || "Registration failed.";
+    error.value = message;
+    notyf.error(message);
   } finally {
     submitting.value = false;
   }

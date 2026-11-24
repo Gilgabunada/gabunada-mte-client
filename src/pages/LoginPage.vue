@@ -21,20 +21,28 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/global";
+import notyf from "../utils/notify";
 
 const auth = useAuthStore();
 const router = useRouter();
 const email = ref("");
 const password = ref("");
 const error = ref("");
+const submitting = ref(false);
 
 const handleLogin = async () => {
   error.value = "";
+  submitting.value = true;
   try {
     await auth.login({ email: email.value, password: password.value });
+    notyf.success("Logged in successfully!");
     router.push("/");
   } catch (err) {
-    error.value = err.response?.data?.message || "Invalid credentials.";
+    const message = err.response?.data?.message || "Invalid credentials.";
+    error.value = message;
+    notyf.error(message);
+  } finally {
+    submitting.value = false;
   }
 };
 </script>

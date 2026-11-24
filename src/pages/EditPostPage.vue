@@ -22,6 +22,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "../api";
+import notyf from "../utils/notify";
 
 const route = useRoute();
 const router = useRouter();
@@ -29,29 +30,39 @@ const title = ref("");
 const content = ref("");
 const error = ref("");
 const loading = ref(true);
+const submitting = ref(false);
 
 onMounted(async () => {
   try {
     const { data } = await api.get(`/posts/${route.params.id}`);
-    title.value = data.post.title;
-    content.value = data.post.content;
+    const post = data.post || data;
+    title.value = post.title;
+    content.value = post.content;
   } catch (err) {
-    error.value = err.response?.data?.message || "Failed to load post.";
+    const message = err.response?.data?.message || "Failed to load post.";
+    error.value = message;
+    notyf.error(message);
   } finally {
     loading.value = false;
   }
 });
 
 const handleUpdate = async () => {
+  submitting.value = true;
   error.value = "";
   try {
     await api.put(`/posts/${route.params.id}`, {
       title: title.value,
       content: content.value,
     });
+    notyf.success("Post updated!");
     router.push(`/posts/${route.params.id}`);
   } catch (err) {
-    error.value = err.response?.data?.message || "Failed to update post.";
+    const message = err.response?.data?.message || "Failed to update post.";
+    error.value = message;
+    notyf.error(message);
+  } finally {
+    submitting.value = false;
   }
 };
 </script>
