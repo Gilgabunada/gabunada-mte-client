@@ -1,0 +1,22 @@
+body {
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.post-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.post-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #475569;
+  font-size: 0.95rem;
+}
